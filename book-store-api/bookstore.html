@@ -1,198 +1,122 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <!-- Set the title of the webpage -->
+<head>
     <title>Book Store Website</title>
-    <!-- Define the styles for the webpage -->
-    <style>
-      body {
-        font-family: Arial, sans-serif; /* Set the font family for the body */
-        margin: 0; /* Remove default margin */
-        padding: 0; /* Remove default padding */
-      }
-
-      .container {
-        max-width: 1200px; /* Set the maximum width of the container */
-        margin: 20px auto; /* Center the container horizontally with a margin of 20px at the top and bottom */
-        padding: 0 20px; /* Add padding to the container */
-      }
-
-      /* Style for individual store sections */
-      .store {
-        border: 1px solid #ccc; /* Add a border around the store section */
-        border-radius: 5px; /* Add rounded corners to the border */
-        padding: 20px; /* Add padding inside the store section */
-        margin-bottom: 20px; /* Add margin at the bottom of the store section */
-        position: relative; /* Set the position to relative for absolute positioning of child elements */
-      }
-
-      /* Style for store images */
-      .store-image {
-        width: 100px; /* Set the width of the store image */
-        height: 100px; /* Set the height of the store image */
-        object-fit: cover; /* Scale the image while maintaining its aspect ratio and covering the entire space */
-        border-radius: 50%; /* Make the image circular */
-        margin-bottom: 10px; /* Add margin at the bottom of the image */
-      }
-
-      /* Style for store information */
-      .store-info {
-        display: flex; /* Use flexbox for layout */
-        justify-content: space-between; /* Align items with space between them */
-        align-items: center; /* Align items vertically */
-      }
-
-      /* Style for store links */
-      .store-info a {
-        text-decoration: none; /* Remove underline from links */
-        color: #333; /* Set the text color of links */
-      }
-
-      /* Style for store links on hover */
-      .store-info a:hover {
-        text-decoration: underline; /* Add underline on hover */
-      }
-
-      /* Style for establishment date */
-      .establishment-date {
-        position: absolute; /* Position the element absolutely within its parent */
-        bottom: 1px; /* Position the element 1px from the bottom */
-        left: 5px; /* Position the element 5px from the left */
-        font-size: 15px; /* Set the font size of the element */
-        color: #666; /* Set the text color of the element */
-        font-style: bold; /* Set the font style of the element to bold */
-      }
-
-      /* Style for ratings */
-      .rating {
-        display: flex; /* Use flexbox for layout */
-        align-items: center; /* Align items vertically */
-        justify-content: flex-end; /* Align items to the right */
-        position: absolute; /* Position the element absolutely within its parent */
-        top: 5px; /* Position the element 5px from the top */
-        right: 5px; /* Position the element 5px from the right */
-      }
-
-      /* Style for star icons */
-      .star {
-        width: 20px; /* Set the width of the star icon */
-        height: 20px; /* Set the height of the star icon */
-        margin-right: 2px; /* Add margin to the right of the star icon */
-      }
-
-      /* Style for books section */
-      .books {
-        margin-top: 10px; /* Add margin at the top of the books section */
-      }
-
-      /* Style for individual book items */
-      .book {
-        margin-bottom: 5px; /* Add margin at the bottom of each book item */
-      }
-
-      /* Style for country flags */
-      .flag {
-        width: 30px; /* Set the width of the country flag */
-        height: 20px; /* Set the height of the country flag */
-        position: absolute; /* Position the element absolutely within its parent */
-        bottom: 5px; /* Position the element 5px from the bottom */
-        right: 5px; /* Position the element 5px from the right */
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Container for the store sections -->
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
     <div class="container" id="storeContainer"></div>
-    <!-- JavaScript code to fetch and display store data -->
     <script>
-      // Asynchronously fetches store data from the API
-      async function fetchStores() {
-        const response = await fetch('http://localhost:3000/stores'); // Fetch data from the API
-        const data = await response.json(); // Parse the JSON response
-        const stores = data.data; // Extract the store data from the response
-        const storeContainer = document.getElementById('storeContainer'); // Get the store container element from the DOM
-        stores.forEach(store => {
-          // Extract store attributes from the data
-          const storeAttributes = store.attributes;
-          // Find the country data for the store
-          const storeCountries = data.included.find(inc => inc.type === 'countries' && inc.id === store.relationships.countries.data.id).attributes;
-          // Extract book data for the store
-          const storeBooks = store.relationships.books.data.map(book => {
-            return data.included.find(inc => inc.type === 'books' && inc.id === book.id).attributes;
-          });
-          // Create a new div element for the store
-          const storeElement = document.createElement('div');
-          storeElement.classList.add('store'); // Add the 'store' class to the store element
-          // Create an image element for the store image
-          const storeImage = document.createElement('img');
-          storeImage.classList.add('store-image'); // Add the 'store-image' class to the store image
-          storeImage.src = storeAttributes.storeImage; // Set the source of the image
-          storeImage.alt = storeAttributes.name; // Set the alt text of the image
-          // Create a div element for the store information
-          const storeInfo = document.createElement('div');
-          storeInfo.classList.add('store-info'); // Add the 'store-info' class to the store information
-          // Create an h3 element for the store name
-          const storeName = document.createElement('h3');
-          storeName.textContent = storeAttributes.name; // Set the text content of the store name
-          // Create a div element for the store rating
-          const rating = document.createElement('div');
-          rating.classList.add('rating'); // Add the 'rating' class to the rating element
-          // Add star icons based on the store rating
-          for (let i = 0; i < storeAttributes.rating; i++) {
-            const star = document.createElement('span');
-            star.classList.add('star'); // Add the 'star' class to the star element
-            star.textContent = '★'; // Set the text content of the star element to a star character
-            rating.appendChild(star); // Append the star element to the rating element
-          }
-          // Create a p element for the establishment date
-          const establishmentDate = document.createElement('p');
-          const date = new Date(storeAttributes.establishmentDate);
-          const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
-          const website = storeAttributes.website.replace(/^https?:\/\//, ''); // Remove "https://" or "http://"
-          establishmentDate.innerHTML = `${formattedDate} - <a href="http://${storeAttributes.website}" target="_blank">${website}</a>`; // Set the HTML content of the establishment date
-          establishmentDate.classList.add('establishment-date'); // Add the 'establishment-date' class to the establishment date element
-          // Create an image element for the country flag
-          const flag = document.createElement('img');
-          flag.classList.add('flag'); // Add the 'flag' class to the flag element
-          flag.src = `https://flagsapi.com/${storeCountries.code}/flat/64.png`; // Set the source of the flag image
-          flag.alt = storeCountries.code; // Set the alt text of the flag image
-          // Create a div element for the books section
-          const books = document.createElement('div');
-          books.classList.add('books'); // Add the 'books' class to the books element
-          // Create an h4 element for the top books title
-          const topBooksTitle = document.createElement('h4');
-          topBooksTitle.textContent = 'Top Books:'; // Set the text content of the top books title
-          // Create a ul element for the books list
-          const booksList = document.createElement('ul');
-          // Add book items to the books list
-          storeBooks.slice(0, 2).forEach(book => {
-            const bookItem = document.createElement('li');
-            bookItem.textContent = `${book.name} - ${book.copiesSold} copies sold`; // Set the text content of the book item
-            booksList.appendChild(bookItem); // Append the book item to the books list
-          });
-          // Check if there are no books available
-          if (storeBooks.length === 0) {
-            const noDataAvailable = document.createElement('p');
-            noDataAvailable.textContent = 'No data available'; // Set the text content of the no data available message
-            books.appendChild(noDataAvailable); // Append the message to the books section
-          } else {
-            books.appendChild(topBooksTitle); // Append the top books title to the books section
-            books.appendChild(booksList); // Append the books list to the books section
-          }
-          // Append elements to the store information
-          storeInfo.appendChild(storeName);
-          storeInfo.appendChild(rating);
-          storeInfo.appendChild(establishmentDate);
-          storeInfo.appendChild(flag);
-          // Append elements to the store element
-          storeElement.appendChild(storeImage);
-          storeElement.appendChild(storeInfo);
-          storeElement.appendChild(books);
-          // Append the store element to the store container
-          storeContainer.appendChild(storeElement);
-        });
-      }
-      fetchStores(); // Call the fetchStores function to fetch and display store data
+        async function fetchStores() {
+            try {
+                const response = await fetch('http://localhost:3000/stores');
+                const responseData = await response.json();
+                console.log('Response Data:', responseData);
+
+                if (!responseData || !responseData.data || !responseData.included) {
+                    console.error('Invalid response data structure');
+                    return;
+                }
+
+                const stores = responseData.data;
+                const included = responseData.included;
+                const storeContainer = document.getElementById('storeContainer');
+
+                stores.forEach(store => {
+                    const storeAttributes = store.attributes;
+                    const storeRelationships = store.relationships;
+
+                    if (!storeRelationships || !storeRelationships.countries || !storeRelationships.countries.data) {
+                        console.error('Invalid store data structure');
+                        return;
+                    }
+
+                    const storeCountries = included.find(inc => inc.type === 'countries' && inc.id === storeRelationships.countries.data.id).attributes;
+
+                    const storeElement = document.createElement('div');
+                    storeElement.classList.add('store');
+
+                    const storeImage = document.createElement('img');
+                    storeImage.classList.add('store-image');
+                    storeImage.src = storeAttributes.storeImage;
+                    storeImage.alt = storeAttributes.name;
+
+                    const storeInfo = document.createElement('div');
+                    storeInfo.classList.add('store-info');
+
+                    const storeName = document.createElement('h3');
+                    storeName.textContent = storeAttributes.name;
+
+                    const rating = document.createElement('div');
+                    rating.classList.add('rating');
+                    for (let i = 0; i < storeAttributes.rating; i++) {
+                        const star = document.createElement('span');
+                        star.classList.add('star');
+                        star.textContent = '★';
+                        rating.appendChild(star);
+                    }
+
+                    const establishmentDate = document.createElement('p');
+                    const date = new Date(storeAttributes.establishmentDate);
+                    const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
+                    const website = storeAttributes.website.replace(/^https?:\/\//, ''); // Remove "https://" or "http://"
+                    establishmentDate.innerHTML = `${formattedDate} - 
+                        <a href="http://${storeAttributes.website}" target="_blank">${website}</a>`;
+                    establishmentDate.classList.add('establishment-date');
+
+                    const flag = document.createElement('img');
+                    flag.classList.add('flag');
+                    flag.src = `https://flagsapi.com/${storeCountries.code}/flat/64.png`;
+                    flag.alt = storeCountries.code;
+
+                    const books = document.createElement('div');
+                    books.classList.add('books');
+
+                    if (storeRelationships.books && storeRelationships.books.data) {
+                        const storeBooks = storeRelationships.books.data.map(book => {
+                            return included.find(inc => inc.type === 'books' && inc.id === book.id).attributes;
+                        });
+
+                        const topBooksTitle = document.createElement('h4');
+                        topBooksTitle.textContent = 'Top Books:';
+
+                        const booksList = document.createElement('ul');
+                        storeBooks.slice(0, 2).forEach(book => {
+                            const bookItem = document.createElement('li');
+                            bookItem.textContent = `${book.name} - ${book.copiesSold} copies sold`;
+                            booksList.appendChild(bookItem);
+                        });
+
+                        if (storeBooks.length === 0) {
+                            const noDataAvailable = document.createElement('p');
+                            noDataAvailable.textContent = 'No data available';
+                            books.appendChild(noDataAvailable);
+                        } else {
+                            books.appendChild(topBooksTitle);
+                            books.appendChild(booksList);
+                        }
+                    } else {
+                        const noDataAvailable = document.createElement('p');
+                        noDataAvailable.textContent = 'No data available';
+                        books.appendChild(noDataAvailable);
+                    }
+
+                    storeInfo.appendChild(storeName);
+                    storeInfo.appendChild(rating);
+                    storeInfo.appendChild(establishmentDate);
+                    storeInfo.appendChild(flag);
+
+                    storeElement.appendChild(storeImage);
+                    storeElement.appendChild(storeInfo);
+                    storeElement.appendChild(books);
+
+                    storeContainer.appendChild(storeElement);
+                });
+            } catch (error) {
+                console.error('Error fetching stores:', error);
+            }
+        }
+        fetchStores();
     </script>
-  </body>
+</body>
 </html>
