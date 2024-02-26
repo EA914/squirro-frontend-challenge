@@ -1,133 +1,124 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Book Store Website</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
-</head>
-<body>
+  </head>
+  <body>
     <div class="container" id="storeContainer"></div>
     <script>
-        async function fetchStores() {
-            try {
-                const response = await fetch('http://localhost:3000/stores');
-                const responseData = await response.json();
-                console.log('Response Data:', responseData);
-
-                if (!responseData || !responseData.data || !responseData.included) {
-                    console.error('Invalid response data structure');
-                    return;
-                }
-
-                const stores = responseData.data;
-                const included = responseData.included;
-                const authorsMap = included
-                    .filter(item => item.type === 'authors')
-                    .reduce((map, item) => {
-                        map[item.id] = item.attributes.fullName;
-                        return map;
-                    }, {});
-
-                const storeContainer = document.getElementById('storeContainer');
-
-                stores.forEach(store => {
-                    const storeAttributes = store.attributes;
-                    const storeRelationships = store.relationships;
-
-                    if (!storeRelationships || !storeRelationships.countries || !storeRelationships.countries.data) {
-                        console.error('Invalid store data structure');
-                        return;
-                    }
-
-                    const storeCountries = included.find(inc => inc.type === 'countries' && inc.id === storeRelationships.countries.data.id).attributes;
-
-                    const storeElement = document.createElement('div');
-                    storeElement.classList.add('store');
-
-                    const storeImage = document.createElement('img');
-                    storeImage.classList.add('store-image');
-                    storeImage.src = storeAttributes.storeImage;
-                    storeImage.alt = storeAttributes.name;
-
-                    const storeInfo = document.createElement('div');
-                    storeInfo.classList.add('store-info');
-
-                    const storeName = document.createElement('h3');
-                    storeName.textContent = storeAttributes.name;
-
-                    const rating = document.createElement('div');
-                    rating.classList.add('rating');
-                    for (let i = 0; i < storeAttributes.rating; i++) {
-                        const star = document.createElement('span');
-                        star.classList.add('star');
-                        star.textContent = '★';
-                        rating.appendChild(star);
-                    }
-
-                    const establishmentDate = document.createElement('p');
-                    const date = new Date(storeAttributes.establishmentDate);
-                    const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
-                    const website = storeAttributes.website.replace(/^https?:\/\//, ''); // Remove "https://" or "http://"
-                    establishmentDate.innerHTML = `${formattedDate} - 
-                        <a href="http://${storeAttributes.website}" target="_blank">${website}</a>`;
-                    establishmentDate.classList.add('establishment-date');
-
-                    const flag = document.createElement('img');
-                    flag.classList.add('flag');
-                    flag.src = `https://flagsapi.com/${storeCountries.code}/flat/64.png`;
-                    flag.alt = storeCountries.code;
-
-                    const books = document.createElement('div');
-                    books.classList.add('books');
-
-                    if (storeRelationships.books && storeRelationships.books.data) {
-                        const storeBooks = storeRelationships.books.data.map(book => {
-                            const bookData = included.find(inc => inc.type === 'books' && inc.id === book.id).attributes;
-                            const authorRelationship = included.find(inc => inc.type === 'books' && inc.id === book.id).relationships.author;
-                            const authorId = authorRelationship ? authorRelationship.data.id : null;
-                            const authorFullName = authorId ? authorsMap[authorId] : 'No author information available';
-                            return { ...bookData, author: authorFullName };
-                        });
-
-                        const topBooksTitle = document.createElement('h4');
-                        topBooksTitle.textContent = 'Top Books:';
-
-                        const booksList = document.createElement('ul');
-                        storeBooks.slice(0, 2).forEach(book => {
-                            const bookItem = document.createElement('li');
-                            bookItem.textContent = `${book.name} by ${book.author} - ${book.copiesSold} copies sold`;
-                            booksList.appendChild(bookItem);
-                        });
-
-                        if (storeBooks.length === 0) {
-                            const noDataAvailable = document.createElement('p');
-                            noDataAvailable.textContent = 'No data available';
-                            books.appendChild(noDataAvailable);
-                        } else {
-                            books.appendChild(topBooksTitle);
-                            books.appendChild(booksList);
-                        }
-                    } else {
-                        const noDataAvailable = document.createElement('p');
-                        noDataAvailable.textContent = 'No data available';
-                        books.appendChild(noDataAvailable);
-                    }
-
-                    storeInfo.appendChild(storeName);
-                    storeInfo.appendChild(rating);
-                    storeInfo.appendChild(establishmentDate);
-                    storeInfo.appendChild(flag);
-
-                    storeElement.appendChild(storeImage);
-                    storeElement.appendChild(storeInfo);
-                    storeElement.appendChild(books);
-
-                    storeContainer.appendChild(storeElement);
-                });
-            } catch (error) {
-                console.error('Error fetching stores:', error);
+      async function fetchStores() {
+        try {
+          const response = await fetch('http://localhost:3000/stores');
+          const responseData = await response.json();
+          console.log('Response Data:', responseData);
+          if (!responseData || !responseData.data || !responseData.included) {
+            console.error('Invalid response data structure');
+            return;
+          }
+          const stores = responseData.data;
+          const included = responseData.included;
+          const authorsMap = included.filter(item => item.type === 'authors').reduce((map, item) => {
+            map[item.id] = item.attributes.fullName;
+            return map;
+          }, {});
+          const storeContainer = document.getElementById('storeContainer');
+          stores.forEach(store => {
+            const storeAttributes = store.attributes;
+            const storeRelationships = store.relationships;
+            if (!storeRelationships || !storeRelationships.countries || !storeRelationships.countries.data) {
+              console.error('Invalid store data structure');
+              return;
             }
+            const storeCountries = included.find(inc => inc.type === 'countries' && inc.id === storeRelationships.countries.data.id).attributes;
+            const storeElement = document.createElement('div');
+            storeElement.classList.add('store');
+            const storeImage = document.createElement('img');
+            storeImage.classList.add('store-image');
+            storeImage.src = storeAttributes.storeImage;
+            storeImage.alt = storeAttributes.name;
+            const storeInfo = document.createElement('div');
+            storeInfo.classList.add('store-info');
+            const storeName = document.createElement('h3');
+            storeName.textContent = storeAttributes.name;
+            const rating = document.createElement('div');
+            rating.classList.add('rating');
+            // Add solid stars for the rating
+            for (let i = 0; i < storeAttributes.rating; i++) {
+              const star = document.createElement('span');
+              star.classList.add('star');
+              star.textContent = '★';
+              rating.appendChild(star);
+            }
+            // Calculate the number of outline stars needed
+            const outlineStars = 5 - storeAttributes.rating;
+            for (let i = 0; i < outlineStars; i++) {
+              const outlineStar = document.createElement('span');
+              outlineStar.classList.add('star');
+              outlineStar.textContent = '☆';
+              rating.appendChild(outlineStar);
+            }
+            const establishmentDate = document.createElement('p');
+            const date = new Date(storeAttributes.establishmentDate);
+            const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
+            const website = storeAttributes.website.replace(/^https?:\/\//, ''); // Remove "https://" or "http://"
+            establishmentDate.innerHTML = `${formattedDate} - 
+                        
+				<a href="http://${storeAttributes.website}" target="_blank">${website}</a>`;
+            establishmentDate.classList.add('establishment-date');
+            const flag = document.createElement('img');
+            flag.classList.add('flag');
+            flag.src = `https://flagsapi.com/${storeCountries.code}/flat/64.png`;
+            flag.alt = storeCountries.code;
+            const books = document.createElement('div');
+            books.classList.add('books');
+            if (storeRelationships.books && storeRelationships.books.data) {
+              const storeBooks = storeRelationships.books.data.map(book => {
+                const bookData = included.find(inc => inc.type === 'books' && inc.id === book.id).attributes;
+                const authorRelationship = included.find(inc => inc.type === 'books' && inc.id === book.id).relationships.author;
+                const authorId = authorRelationship ? authorRelationship.data.id : null;
+                const authorFullName = authorId ? authorsMap[authorId] : 'No author information available';
+                return {
+                  ...bookData,
+                  author: authorFullName
+                };
+              });
+              const topBooksTitle = document.createElement('h4');
+              topBooksTitle.textContent = 'Top Books:';
+              const booksList = document.createElement('ul');
+              booksList.style.marginTop = '-17px'
+              storeBooks.slice(0, 2).forEach(book => {
+                const bookItem = document.createElement('li');
+                bookItem.textContent = `${book.name} by ${book.author} - ${book.copiesSold} copies sold`;
+                booksList.appendChild(bookItem);
+              });
+              if (storeBooks.length === 0) {
+                const noDataAvailable = document.createElement('p');
+                noDataAvailable.textContent = 'No data available';
+                books.appendChild(noDataAvailable);
+              } else {
+                books.appendChild(topBooksTitle);
+                books.appendChild(booksList);
+              }
+            } else {
+              const noDataAvailable = document.createElement('p');
+              noDataAvailable.textContent = 'No data available';
+              books.appendChild(noDataAvailable);
+            }
+            storeInfo.appendChild(storeName);
+            storeInfo.appendChild(rating);
+            storeInfo.appendChild(establishmentDate);
+            storeInfo.appendChild(flag);
+            storeElement.appendChild(storeImage);
+            storeElement.appendChild(storeInfo);
+            storeElement.appendChild(books);
+            storeContainer.appendChild(storeElement);
+          });
+        } catch (error) {
+          console.error('Error fetching stores:', error);
         }
-        fetchStores();
+      }
+      fetchStores();
     </script>
-</body>
+  </body>
 </html>
